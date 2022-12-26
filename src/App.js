@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useCollection } from 'react-firebase-hooks/firestore'
-import { collection, getDocs, getFirestore } from 'firebase/firestore';
+import { collection, getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8LH5sMT-UhFk7aIBUp_S3bH4IxB8pypI",
@@ -18,42 +18,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const db = getFirestore(app);
-
-const SignIn = () => {
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider()
-    signInWithPopup(auth, provider)
-  }
-
-  return (
-    <button onClick={signInWithGoogle}>Sign in with Google</button>
-  )
-}
-
-const ChatRoom = () => {
-  // const querySnapshot = await getDocs(collection(db, "message"));
-  const [messages, loading, error] = useCollection(collection(db, "message"))
-
-  if (error) {
-    console.log('Error', error)
-  }
-
-  if (loading) {
-    return 'Loading...'
-  }
-
-  if (messages) {
-    return (
-      messages.docs.map((doc) => (
-        <div key={doc.id}>
-          {doc.data().text}
-        </div>
-      ))
-    )
-  } else {
-    return 'No message found'
-  }
-}
 
 function App() {
   const [user, authLoad, authError] = useAuthState(auth)
@@ -84,6 +48,40 @@ function App() {
       </section>
     </div>
   );
+}
+
+const SignIn = () => {
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider()
+    signInWithPopup(auth, provider)
+  }
+
+  return (
+    <button onClick={signInWithGoogle}>Sign in with Google</button>
+  )
+}
+
+const ChatRoom = () => {
+  // const querySnapshot = await getDocs(collection(db, "message"));
+  const [messages, loading, error] = useCollection(collection(db, "message"))
+
+  if (error) {
+    console.log('Error', error)
+  }
+
+  if (loading) {
+    return 'Loading...'
+  }
+
+  if (messages) {
+    return (
+      messages.docs.map((doc) => (
+        <ChatMessage uid={doc.id} message={doc.data()} />
+      ))
+    )
+  } else {
+    return 'No message found'
+  }
 }
 
 export default App;
