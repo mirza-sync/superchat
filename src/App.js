@@ -106,7 +106,7 @@ const ChatRoom = () => {
         messages ? (
           messages.docs.map((doc) => (
             <div key={doc.id}>
-              <ChatMessage uid={doc.id} message={doc.data()} />
+              <ChatMessage uid={doc.data().uid} message={doc.data()} />
             </div>
           ))
         ) : (
