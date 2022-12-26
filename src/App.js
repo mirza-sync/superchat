@@ -41,7 +41,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
+      <header>
+        <h1>Super Chat</h1>
+        <SignOut />
       </header>
 
       <section>
@@ -58,7 +60,13 @@ const SignIn = () => {
   }
 
   return (
-    <button onClick={signInWithGoogle}>Sign in with Google</button>
+    <button className="sign-in" onClick={signInWithGoogle}>Sign in with Google</button>
+  )
+}
+
+const SignOut = () => {
+  return auth.currentUser && (
+    <button className='sign-out' onClick={() => auth.signOut()}>Sign Out</button>
   )
 }
 
