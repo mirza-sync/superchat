@@ -3,7 +3,8 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useCollection } from 'react-firebase-hooks/firestore'
-import { collection, getFirestore } from 'firebase/firestore';
+import { addDoc, collection, getFirestore, limit, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import { useState } from 'react';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8LH5sMT-UhFk7aIBUp_S3bH4IxB8pypI",
@@ -62,8 +63,26 @@ const SignIn = () => {
 }
 
 const ChatRoom = () => {
-  // const querySnapshot = await getDocs(collection(db, "message"));
-  const [messages, loading, error] = useCollection(collection(db, "message"))
+  const messagesRef = collection(db, "messages")
+  const [messages, loading, error] = useCollection(query(messagesRef, orderBy('createdAt'), limit(25)))
+  const [formValue, setFormValue] = useState('')
+
+  const sendMessage = async (e) => {
+    const { uid, photoURL } = auth.currentUser
+
+    e.preventDefault()
+    try {
+      await addDoc(messagesRef, {
+        text: formValue,
+        createdAt: serverTimestamp(),
+        uid,
+        photoURL,
+      })
+    } catch (error) {
+      console.log('Failed to send message: ', error)
+    }
+    setFormValue('')
+  }
 
   if (error) {
     console.log('Error', error)
@@ -73,15 +92,25 @@ const ChatRoom = () => {
     return 'Loading...'
   }
 
-  if (messages) {
-    return (
-      messages.docs.map((doc) => (
-        <ChatMessage uid={doc.id} message={doc.data()} />
-      ))
-    )
-  } else {
-    return 'No message found'
-  }
+  return (
+    <>
+      {
+        messages ? (
+          messages.docs.map((doc) => (
+            <div key={doc.id}>
+              <ChatMessage uid={doc.id} message={doc.data()} />
+            </div>
+          ))
+        ) : (
+          'No message found'
+        )
+      }
+      <form onSubmit={sendMessage}>
+        <input value={formValue} onChange={(e) => setFormValue(e.target.value)} />
+        <button type='submit'>Send</button>
+      </form>
+    </>
+  )
 }
 
 function ChatMessage(props) {
@@ -91,6 +120,10 @@ function ChatMessage(props) {
 
   return (
     <div className={`message ${messageClass}`}>
+      <img
+        src={message.photoURL || 'https://picsum.photos/seed/picsum/200/200'} alt='user'
+        referrerPolicy='no-referrer'
+      />
       <p>{message.text}</p>
     </div>
   )
