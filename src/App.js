@@ -4,7 +4,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useCollection } from 'react-firebase-hooks/firestore'
 import { addDoc, collection, getFirestore, limit, orderBy, query, serverTimestamp } from 'firebase/firestore';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8LH5sMT-UhFk7aIBUp_S3bH4IxB8pypI",
@@ -74,6 +74,7 @@ const ChatRoom = () => {
   const messagesRef = collection(db, "messages")
   const [messages, loading, error] = useCollection(query(messagesRef, orderBy('createdAt'), limit(25)))
   const [formValue, setFormValue] = useState('')
+  const dummy = useRef()
 
   const sendMessage = async (e) => {
     const { uid, photoURL } = auth.currentUser
@@ -90,6 +91,7 @@ const ChatRoom = () => {
       console.log('Failed to send message: ', error)
     }
     setFormValue('')
+    dummy.current.scrollIntoView({ behavior: 'smooth' })
   }
 
   if (error) {
@@ -102,17 +104,20 @@ const ChatRoom = () => {
 
   return (
     <>
-      {
-        messages ? (
-          messages.docs.map((doc) => (
-            <div key={doc.id}>
-              <ChatMessage uid={doc.data().uid} message={doc.data()} />
-            </div>
-          ))
-        ) : (
-          'No message found'
-        )
-      }
+      <main>
+        {
+          messages ? (
+            messages.docs.map((doc) => (
+              <div key={doc.id}>
+                <ChatMessage uid={doc.data().uid} message={doc.data()} />
+              </div>
+            ))
+          ) : (
+            'No message found'
+          )
+        }
+        <span ref={dummy}></span>
+      </main>
       <form onSubmit={sendMessage}>
         <input value={formValue} onChange={(e) => setFormValue(e.target.value)} />
         <button type='submit'>Send</button>
