@@ -84,4 +84,16 @@ const ChatRoom = () => {
   }
 }
 
+function ChatMessage(props) {
+  const { uid, message } = props
+
+  const messageClass = uid === auth.currentUser.uid ? 'sent' : 'received'
+
+  return (
+    <div className={`message ${messageClass}`}>
+      <p>{message.text}</p>
+    </div>
+  )
+}
+
 export default App;
