@@ -2,7 +2,8 @@ import './App.css';
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAuthState } from 'react-firebase-hooks/auth'
-import ChatRoom from './components/ChatRoom';
+import { useCollection } from 'react-firebase-hooks/firestore'
+import { collection, getDocs, getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8LH5sMT-UhFk7aIBUp_S3bH4IxB8pypI",
@@ -16,6 +17,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
+const db = getFirestore(app);
 
 const SignIn = () => {
   const signInWithGoogle = async () => {
@@ -28,21 +30,46 @@ const SignIn = () => {
   )
 }
 
-function App() {
-  const [user, loading, error] = useAuthState(auth)
+const ChatRoom = () => {
+  // const querySnapshot = await getDocs(collection(db, "message"));
+  const [messages, loading, error] = useCollection(collection(db, "message"))
+
+  if (error) {
+    console.log('Error', error)
+  }
 
   if (loading) {
+    return 'Loading...'
+  }
+
+  if (messages) {
+    return (
+      messages.docs.map((doc) => (
+        <div key={doc.id}>
+          {doc.data().text}
+        </div>
+      ))
+    )
+  } else {
+    return 'No message found'
+  }
+}
+
+function App() {
+  const [user, authLoad, authError] = useAuthState(auth)
+
+  if (authLoad) {
     return (
       <div>
         <p>Initialising User...</p>
       </div>
     );
   }
-  
-  if (error) {
+
+  if (authError) {
     return (
       <div>
-        <p>Error: {error}</p>
+        <p>Error: {authError}</p>
       </div>
     );
   }
