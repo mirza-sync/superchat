@@ -127,6 +127,10 @@ p {
   align-items: center;
 }
 
+.message p {
+  text-align: left;
+}
+
 .sent {
   flex-direction: row-reverse;
 }
